@@ -1,0 +1,1 @@
+~/.local/bin:~/bin:~/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/istio-latest/bin:/usr/local/linkerd/bin:/usr/lib/golang/bin:/opt/mssql-tools/bin:~/bundle/bin:~/bundle/gems/bin
