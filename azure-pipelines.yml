@@ -3,7 +3,7 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 trigger:
-- master
+- main
 
 # TODO: Replace the agent pool name
 pool: myAgentPool
@@ -13,13 +13,16 @@ variables:
   azureServiceConnectionId: 'myazurepipelineconnection'
   
   # TODO: Replace 'mywebapp193576' with the existing Web App name
-  webAppName: 'myflaskmlwebappy'
+  webAppName: 'myazurepipelinewebapp'
 
   # Environment name
-  environmentName: 'flask-ml-service'
+  environmentName: 'ci-cd-pipeline'
 
   # Project root folder. Point to the folder containing manage.py file.
   projectRoot: $(System.DefaultWorkingDirectory)
+  
+    # Python version: 3.8
+  pythonVersion: '3.8'
 
   appName: 'myazurepipelinewebapp'
   deployToSlotOrASE: true
@@ -37,16 +40,26 @@ stages:
     pool: myAgentPool
     steps:    
     - script: |
+        python -m venv myenv
+        source myenv/bin/activate
+        python -m pip install --upgrade pip
+        pip install setup
+      workingDirectory: $(projectRoot)
+      displayName: "Install requirements"
+      
+    - script: |
         python3.8 -m pip install --upgrade pip
         python3.8 -m pip install setup
         python3.8 -m pip install -r requirements.txt
       workingDirectory: $(projectRoot)
+      
     - script: |
         export PATH=$HOME/.local/bin:$PATH
         make install
         make lint
       workingDirectory: $(projectRoot)
       displayName: 'Run lint tests'
+      
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
@@ -72,8 +85,13 @@ stages:
       runOnce:
         deploy:
           steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+            displayName: 'Use Python version'
+            
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : flask-ml-service'
+            displayName: 'Deploy Azure Web App : ci-cd-pipeline'
             inputs:
                 appType: 'webAppLinux'
                 azureSubscription: $(azureServiceConnectionId)
